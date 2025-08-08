@@ -12,7 +12,7 @@ public class ConnectionDB {
     public static volatile ConnectionDB instance;
     private static final Dotenv dotenv = Dotenv.load();
     private static final String URL = dotenv.get("DB_URL");
-    private static final String USER = dotenv.get("DD_USER");
+    private static final String USER = dotenv.get("DB_USER");
     private static final String PWD = dotenv.get("DB_PWD");
 
     private Connection con;
