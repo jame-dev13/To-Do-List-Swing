@@ -19,6 +19,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  *
@@ -63,32 +64,28 @@ public class CRUDPane extends javax.swing.JFrame {
         }
         this.statusBox.setEnabled(false);
         tasks = this.taskRepo.findAll();
+
         btnClear.addActionListener(l -> clear());
         btnInsert.addActionListener(l -> insert());
         btnComplete.addActionListener(l -> markAsComplete());
         btnUpdate.addActionListener(l -> updateRecord());
         exportTxt.addActionListener(l -> loadToTxt());
+        exportCsv.addActionListener(l -> loadToCsv());
         btnSortDesc.addActionListener(l -> {
-            Comparator<Task> comparator =
-                    Comparator.comparing(Task::getDesc, String::compareToIgnoreCase);
-            tasks.sort(comparator);
+            tasks.sort(Comparator.comparing(Task::getDesc));
             taskConsumer.accept(tasks);
         });
 
         btnSortPrio.addActionListener(l -> {
-            Comparator<Task> comparator =
-                    Comparator.comparing(Task::getPriority, Comparator.reverseOrder());
-            tasks.sort(comparator);
+            tasks.sort(Comparator.comparing(Task::getPriority).reversed());
             taskConsumer.accept(tasks);
         });
 
         btnSortStat.addActionListener(l -> {
-            Comparator<Task> comparator =
-                    Comparator.comparing(t -> t.getStatus().name(), String::compareTo);
-            tasks.sort(comparator);
+            tasks.sort(Comparator.comparing(t -> t.getStatus().name()));
             taskConsumer.accept(tasks);
         });
-        this.menuThemeMode.addActionListener(l -> darkMode());
+        menuThemeMode.addActionListener(l -> darkMode());
     }
     
     private void darkMode(){
@@ -106,26 +103,52 @@ public class CRUDPane extends javax.swing.JFrame {
     }
 
     private void loadToTxt(){
-        String path = JOptionPane.showInputDialog(rootPane,
-                "Pointing to your home directory, input the directory to place the file: ",
-                    "Export", JOptionPane.INFORMATION_MESSAGE);
+        Function<Task, ExportDto> mapper = task -> ExportDto.builder()
+                .desc(task.getDesc())
+                .priority(task.getPriority())
+                .status(task.getStatus())
+                .build();
         List<Task> currentTasks = this.taskRepo.findAll();
         if(currentTasks.isEmpty()){
             JOptionPane.showMessageDialog(rootPane, "Table is Empty.",
                     "Warning", JOptionPane.WARNING_MESSAGE);
             return;
         }
+        String path = JOptionPane.showInputDialog(rootPane,
+                "Pointing to your home directory, input the directory to place the file: ",
+                "Export", JOptionPane.INFORMATION_MESSAGE);
         List<ExportDto> dtos = currentTasks.stream()
-                .map(task -> ExportDto.builder()
-                        .desc(task.getDesc())
-                        .priority(task.getPriority())
-                        .status(task.getStatus())
-                        .build()).toList();
+                .map(mapper)
+                .toList();
         tasks = currentTasks;
-        currentTasks = null; 
-        this.exportRepo.toTxt(dtos, path, "/MyToDoList.txt");
+        currentTasks = null;
+        this.exportRepo.toTxt(dtos, path, "MyToDoList.txt");
         dtos = null;
-    }   
+    }
+
+    private void loadToCsv(){
+        Function<Task, ExportDto> mapper = task -> ExportDto.builder()
+                .desc(task.getDesc())
+                .priority(task.getPriority())
+                .status(task.getStatus())
+                .build();
+        List<Task> currentTasks = this.taskRepo.findAll();
+        if(currentTasks.isEmpty()){
+            JOptionPane.showMessageDialog(rootPane, "Table is Empty.",
+                    "Warning", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        String path =
+                JOptionPane.showInputDialog(rootPane, "Pointing to your home directory, input the directory to place the file: ",
+                        "Export", JOptionPane.INFORMATION_MESSAGE);
+        List<ExportDto> dtos = currentTasks.stream()
+                .map(mapper)
+                .toList();
+        tasks = currentTasks;
+        currentTasks = null;
+        this.exportRepo.toCsv(dtos, path, "MyToDoList.csv");
+        dtos = null;
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -453,6 +476,7 @@ public class CRUDPane extends javax.swing.JFrame {
         statusBox.setSelectedItem(priorityBox.getItemAt(0));
         btnUpdate.setEnabled(true);
         btnInsert.setEnabled(false);
+
         if(evt.getClickCount() == 2 && evt.getButton() == MouseEvent.BUTTON1){
             UUID uuid = (UUID)this.dataTable.getValueAt(row, 0); 
             Task task = this.taskRepo.findTaskByUuid(uuid).orElse(null);
