@@ -1,0 +1,15 @@
+services:
+  db:
+    image: mysql:latest
+    restart: always
+    environment:
+      - 'MYSQL_DATABASE=${DB_NAME}'
+      - 'MYSQL_PASSWORD=${DB_PWD}'
+      - 'MYSQL_ROOT_PASSWORD=${PWD_ROOT}'
+      - 'MYSQL_USER=${DB_USER}'
+    ports:
+      - "${DB_HOST}"
+    volumes:
+      - mysql_data:/var/lib/mysql
+volumes:
+  mysql_data:

@@ -1,0 +1,620 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
+ */
+package jame.dev.GUI;
+
+import com.formdev.flatlaf.FlatDarkLaf;
+import jame.dev.dtos.ExportDto;
+import jame.dev.models.Status;
+import jame.dev.models.Task;
+import jame.dev.repository.IExportRepo;
+import jame.dev.repository.ITaskRepo;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.UUID;
+import java.util.function.Consumer;
+
+/**
+ *
+ * @author angel
+ */
+public class CRUDPane extends javax.swing.JFrame {
+
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(CRUDPane.class.getName());
+
+    private DefaultTableModel model;
+    private final ITaskRepo taskRepo;
+    private final IExportRepo exportRepo;
+    private static List<Task> tasks;
+    private  final LookAndFeel THEME;
+
+
+    public CRUDPane(ITaskRepo taskRepo, IExportRepo exportRepo) {
+        this.taskRepo = taskRepo;
+        this.exportRepo = exportRepo;
+        tasks = new ArrayList<>();
+        initComponents();
+        super.setTitle("To Do List Swing");
+        init();
+        tableConfig();
+        super.setLocationRelativeTo(null);
+        super.setVisible(true);
+        THEME = UIManager.getLookAndFeel();
+    }
+
+    private void init() {
+        Consumer<List<Task>> taskConsumer = tasks -> {
+            for (int i = 0; i < this.model.getRowCount(); i++) {
+                this.model.setValueAt(tasks.get(i).getUuid(),i, 0);
+                this.model.setValueAt(tasks.get(i).getDesc(),i, 1);
+                this.model.setValueAt(tasks.get(i).getPriority(),i, 2);
+                this.model.setValueAt(tasks.get(i).getStatus().name(),i, 3);
+            }
+        };
+        int exit = this.taskRepo.createTable();
+        if (exit != 0) {
+            System.exit(1);
+        }
+        this.statusBox.setEnabled(false);
+        tasks = this.taskRepo.findAll();
+        btnClear.addActionListener(l -> clear());
+        btnInsert.addActionListener(l -> insert());
+        btnComplete.addActionListener(l -> markAsComplete());
+        btnUpdate.addActionListener(l -> updateRecord());
+        exportTxt.addActionListener(l -> loadToTxt());
+        btnSortDesc.addActionListener(l -> {
+            Comparator<Task> comparator =
+                    Comparator.comparing(Task::getDesc, String::compareToIgnoreCase);
+            tasks.sort(comparator);
+            taskConsumer.accept(tasks);
+        });
+
+        btnSortPrio.addActionListener(l -> {
+            Comparator<Task> comparator =
+                    Comparator.comparing(Task::getPriority, Comparator.reverseOrder());
+            tasks.sort(comparator);
+            taskConsumer.accept(tasks);
+        });
+
+        btnSortStat.addActionListener(l -> {
+            Comparator<Task> comparator =
+                    Comparator.comparing(t -> t.getStatus().name(), String::compareTo);
+            tasks.sort(comparator);
+            taskConsumer.accept(tasks);
+        });
+        this.menuThemeMode.addActionListener(l -> darkMode());
+    }
+    
+    private void darkMode(){
+        boolean selected = this.menuThemeMode.isSelected();
+        try{
+            if(selected){
+                UIManager.setLookAndFeel(new FlatDarkLaf());
+            }else {
+                UIManager.setLookAndFeel(THEME);
+            }
+            SwingUtilities.updateComponentTreeUI(JFrame.getFrames()[0]);
+        }catch (UnsupportedLookAndFeelException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void loadToTxt(){
+        String path = JOptionPane.showInputDialog(rootPane,
+                "Pointing to your home directory, input the directory to place the file: ",
+                    "Export", JOptionPane.INFORMATION_MESSAGE);
+        List<Task> currentTasks = this.taskRepo.findAll();
+        if(currentTasks.isEmpty()){
+            JOptionPane.showMessageDialog(rootPane, "Table is Empty.",
+                    "Warning", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        List<ExportDto> dtos = currentTasks.stream()
+                .map(task -> ExportDto.builder()
+                        .desc(task.getDesc())
+                        .priority(task.getPriority())
+                        .status(task.getStatus())
+                        .build()).toList();
+        tasks = currentTasks;
+        currentTasks = null; 
+        this.exportRepo.toTxt(dtos, path, "/MyToDoList.txt");
+        dtos = null;
+    }   
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        MainPane = new javax.swing.JPanel();
+        inputPane = new javax.swing.JPanel();
+        jPanel1 = new javax.swing.JPanel();
+        btnClear = new javax.swing.JButton();
+        btnUpdate = new javax.swing.JButton();
+        btnInsert = new javax.swing.JButton();
+        btnComplete = new javax.swing.JButton();
+        jPanel2 = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        txtTaskDesc = new javax.swing.JTextField();
+        priorityBox = new javax.swing.JComboBox<>();
+        statusBox = new javax.swing.JComboBox<>();
+        jPanel3 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        dataTable = new javax.swing.JTable();
+        jPanel4 = new javax.swing.JPanel();
+        btnSortDesc = new javax.swing.JButton();
+        btnSortPrio = new javax.swing.JButton();
+        btnSortStat = new javax.swing.JButton();
+        jMenuBar1 = new javax.swing.JMenuBar();
+        menuExport = new javax.swing.JMenu();
+        exportTxt = new javax.swing.JMenuItem();
+        exportCsv = new javax.swing.JMenuItem();
+        jMenu2 = new javax.swing.JMenu();
+        menuThemeMode = new javax.swing.JCheckBoxMenuItem();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setFont(new java.awt.Font("Z003", 2, 10)); // NOI18N
+
+        inputPane.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+
+        btnClear.setText("Clear");
+        btnClear.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+
+        btnUpdate.setText("Update");
+
+        btnInsert.setText("Insert");
+
+        btnComplete.setText("Complete");
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnClear, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnUpdate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnInsert, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnComplete, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(0, 16, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnInsert)
+                    .addComponent(btnClear))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnUpdate)
+                    .addComponent(btnComplete))
+                .addContainerGap())
+        );
+
+        jLabel3.setLabelFor(txtTaskDesc);
+        jLabel3.setText("Task Description:");
+
+        jLabel5.setLabelFor(priorityBox);
+        jLabel5.setText("Priority: ");
+
+        jLabel6.setLabelFor(statusBox);
+        jLabel6.setText("Status:");
+
+        priorityBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" }));
+
+        statusBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "PENDING", "COMPLETED" }));
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addContainerGap(39, Short.MAX_VALUE)
+                        .addComponent(jLabel3))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(37, 37, 37)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(statusBox, 0, 0, Short.MAX_VALUE)
+                            .addComponent(txtTaskDesc, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(priorityBox, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                .addContainerGap(39, Short.MAX_VALUE))
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(75, 75, 75)
+                        .addComponent(jLabel5))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(76, 76, 76)
+                        .addComponent(jLabel6)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(12, 12, 12)
+                .addComponent(jLabel3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txtTaskDesc)
+                .addGap(13, 13, 13)
+                .addComponent(jLabel5)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(priorityBox)
+                .addGap(9, 9, 9)
+                .addComponent(jLabel6)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(statusBox)
+                .addGap(25, 25, 25))
+        );
+
+        javax.swing.GroupLayout inputPaneLayout = new javax.swing.GroupLayout(inputPane);
+        inputPane.setLayout(inputPaneLayout);
+        inputPaneLayout.setHorizontalGroup(
+            inputPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, inputPaneLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(inputPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(inputPaneLayout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(7, Short.MAX_VALUE))
+        );
+        inputPaneLayout.setVerticalGroup(
+            inputPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(inputPaneLayout.createSequentialGroup()
+                .addGap(30, 30, 30)
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(35, 35, 35))
+        );
+
+        jLabel1.setFont(new java.awt.Font("Z003", 3, 24)); // NOI18N
+        jLabel1.setText("Developed by JameDev");
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel1)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                .addContainerGap(76, Short.MAX_VALUE)
+                .addComponent(jLabel1)
+                .addContainerGap())
+        );
+
+        jScrollPane2.setBorder(javax.swing.BorderFactory.createTitledBorder("Tasks"));
+        jScrollPane2.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+
+        dataTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {},
+                {},
+                {},
+                {}
+            },
+            new String [] {
+
+            }
+        ));
+        dataTable.setAlignmentX(1.0F);
+        dataTable.setAlignmentY(1.0F);
+        dataTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
+        dataTable.setRowHeight(30);
+        dataTable.setRowMargin(10);
+        dataTable.setShowHorizontalLines(true);
+        dataTable.getTableHeader().setReorderingAllowed(false);
+        dataTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                dataTableMouseClicked(evt);
+            }
+        });
+        jScrollPane2.setViewportView(dataTable);
+
+        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Sort Options", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Z003", 2, 18))); // NOI18N
+
+        btnSortDesc.setText("By description");
+
+        btnSortPrio.setText("By priority");
+
+        btnSortStat.setText("By status");
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(btnSortDesc)
+                .addGap(18, 18, 18)
+                .addComponent(btnSortPrio)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(btnSortStat)
+                .addContainerGap())
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnSortDesc)
+                    .addComponent(btnSortPrio)
+                    .addComponent(btnSortStat))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout MainPaneLayout = new javax.swing.GroupLayout(MainPane);
+        MainPane.setLayout(MainPaneLayout);
+        MainPaneLayout.setHorizontalGroup(
+            MainPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+            .addGroup(MainPaneLayout.createSequentialGroup()
+                .addGroup(MainPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(MainPaneLayout.createSequentialGroup()
+                        .addContainerGap(9, Short.MAX_VALUE)
+                        .addComponent(inputPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(26, 26, 26))
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(MainPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(MainPaneLayout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 608, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(MainPaneLayout.createSequentialGroup()
+                        .addGap(135, 135, 135)
+                        .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(132, 132, 132)))
+                .addGap(56, 56, 56))
+        );
+        MainPaneLayout.setVerticalGroup(
+            MainPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(MainPaneLayout.createSequentialGroup()
+                .addComponent(inputPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 98, Short.MAX_VALUE)
+                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, MainPaneLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(29, 29, 29))
+        );
+
+        jMenuBar1.setPreferredSize(new java.awt.Dimension(99, 50));
+
+        menuExport.setText("Export");
+
+        exportTxt.setText("to file.txt");
+        menuExport.add(exportTxt);
+
+        exportCsv.setText("to file.csv");
+        menuExport.add(exportCsv);
+
+        jMenuBar1.add(menuExport);
+
+        jMenu2.setText("Theme");
+
+        menuThemeMode.setText("Dark Mode");
+        jMenu2.add(menuThemeMode);
+
+        jMenuBar1.add(jMenu2);
+
+        setJMenuBar(jMenuBar1);
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(MainPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(10, 10, 10)
+                .addComponent(MainPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void dataTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_dataTableMouseClicked
+        int row = this.dataTable.getSelectedRow();
+        String desc = dataTable.getValueAt(row, 1).toString();
+        String priority = dataTable.getValueAt(row, 2).toString();
+        int index = Integer.parseInt(priority) - 1;
+        statusBox.setEnabled(true);
+        txtTaskDesc.setText(desc);
+        priorityBox.setSelectedItem(priorityBox.getItemAt(index));
+        statusBox.setSelectedItem(priorityBox.getItemAt(0));
+        btnUpdate.setEnabled(true);
+        btnInsert.setEnabled(false);
+        if(evt.getClickCount() == 2 && evt.getButton() == MouseEvent.BUTTON1){
+            UUID uuid = (UUID)this.dataTable.getValueAt(row, 0); 
+            Task task = this.taskRepo.findTaskByUuid(uuid).orElse(null);
+            int indexTask = tasks.indexOf(task);
+            if(task != null){
+                this.taskRepo.updateStatus(uuid);
+                this.model.setValueAt(Status.COMPLETED.name(), row, 3);
+                JOptionPane.showMessageDialog(rootPane, "Status Changed!",
+                        "", JOptionPane.INFORMATION_MESSAGE);
+                tasks.get(indexTask).setStatus(Status.COMPLETED);
+                task = null;
+                clear();
+            }
+            else{
+                JOptionPane.showMessageDialog(rootPane, "Task not found!", 
+                        "ALERT", JOptionPane.WARNING_MESSAGE);
+            }
+            uuid = null; 
+        }
+    }//GEN-LAST:event_dataTableMouseClicked
+
+    private void tableConfig() {
+        this.model = new DefaultTableModel();
+        this.dataTable.setModel(this.model);
+        this.model.addColumn("UUID");
+        this.model.addColumn("Task Description");
+        this.model.addColumn("Priority");
+        this.model.addColumn("Status");
+        this.dataTable.setDefaultEditor(Object.class, null);
+        tasks.forEach(task -> {
+            model.addRow(new Object[]{
+                task.getUuid(), task.getDesc(), task.getPriority(),
+                task.getStatus().name()
+            });
+        });
+    }
+    private void clear() {
+        int row = this.dataTable.getSelectedRow();
+        this.txtTaskDesc.setText("");
+        this.priorityBox.setSelectedIndex(0);
+        if (!btnInsert.isEnabled()) {
+            this.btnInsert.setEnabled(true);
+        }
+        if (btnUpdate.isEnabled()) {
+            this.btnUpdate.setEnabled(false);
+        }
+        if (statusBox.isEnabled()) {
+            this.statusBox.setEnabled(false);
+        }
+        if(this.dataTable.isRowSelected(row)){
+            this.dataTable.clearSelection();
+        }
+    }
+
+    private void insert() {
+        Task task = Task.builder()
+                .uuid(UUID.randomUUID())
+                .desc(txtTaskDesc.getText().strip())
+                .priority(Integer.parseInt(priorityBox.
+                        getItemAt(priorityBox.getSelectedIndex())
+                        .toString())
+                )
+                .status(Status.PENDING)
+                .build();
+        this.taskRepo.save(task);
+        JOptionPane.showMessageDialog(rootPane,
+                "Task Inserted!",
+                "INSERT",
+                JOptionPane.INFORMATION_MESSAGE);
+        updateTable(task);
+        clear();
+        tasks.add(task);
+        task = null; 
+    }
+
+    private void updateRecord() {
+        int row = this.dataTable.getSelectedRow();
+        UUID uuid = (UUID) this.model.getValueAt(row, 0);
+        Task task = this.taskRepo.findTaskByUuid(uuid).orElse(null);
+        int index = tasks.indexOf(task);
+        if (task != null) {
+            task.setDesc(txtTaskDesc.getText().strip());
+            task.setPriority(
+                    Integer.parseInt(priorityBox
+                            .getItemAt(priorityBox.getSelectedIndex())
+                            .toString())
+            );
+            task.setStatus(
+                    Status.valueOf(
+                            statusBox
+                                    .getItemAt(statusBox.getSelectedIndex())
+                                    .toString()
+                    )
+            );
+
+            this.taskRepo.update(task);
+            this.model.setValueAt(task.getDesc(), row, 1);
+            this.model.setValueAt(task.getPriority(), row, 2);
+            this.model.setValueAt(task.getStatus().name(), row, 3);
+            JOptionPane.showMessageDialog(rootPane,
+                    "Record Updated successfully.",
+                    "Update", JOptionPane.INFORMATION_MESSAGE);
+            clear();
+            this.btnUpdate.setEnabled(false);
+            this.btnInsert.setEnabled(true);
+        }
+        else JOptionPane.showMessageDialog(rootPane, "Task not found.", "ALERT", JOptionPane.WARNING_MESSAGE);
+        tasks.set(index, task);
+        uuid = null;
+        task = null;
+    }
+
+    private void markAsComplete() {
+        int row = this.dataTable.getSelectedRow();
+        UUID uuid = (UUID) this.model.getValueAt(row, 0);
+        this.taskRepo.deleteTaskByUuid(uuid);
+        this.model.removeRow(row);
+        JOptionPane.showMessageDialog(rootPane,
+                "Task marked as Completed and removed.",
+                "Complete", JOptionPane.INFORMATION_MESSAGE);
+        Task task = this.taskRepo.findTaskByUuid(uuid).orElse(null);
+        if(task != null) tasks.remove(task);
+        uuid = null;
+        task = null;
+        clear();
+    }
+
+    private void updateTable(Task task) {
+        this.model.addRow(new Object[]{
+            task.getUuid(), task.getDesc(), task.getPriority(),
+            task.getStatus().name()
+        });
+    }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel MainPane;
+    private javax.swing.JButton btnClear;
+    private javax.swing.JButton btnComplete;
+    private javax.swing.JButton btnInsert;
+    private javax.swing.JButton btnSortDesc;
+    private javax.swing.JButton btnSortPrio;
+    private javax.swing.JButton btnSortStat;
+    private javax.swing.JButton btnUpdate;
+    private javax.swing.JTable dataTable;
+    private javax.swing.JMenuItem exportCsv;
+    private javax.swing.JMenuItem exportTxt;
+    private javax.swing.JPanel inputPane;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JMenu jMenu2;
+    private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JMenu menuExport;
+    private javax.swing.JCheckBoxMenuItem menuThemeMode;
+    private javax.swing.JComboBox<String> priorityBox;
+    private javax.swing.JComboBox<String> statusBox;
+    private javax.swing.JTextField txtTaskDesc;
+    // End of variables declaration//GEN-END:variables
+}
